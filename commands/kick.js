@@ -1,55 +1,33 @@
-const Discord = require('discord.js');
-const update = require('../functions/modhistory.js');
+const Discord = require("discord.js");
+const client = new Discord.Client();
+module.exports.run = (client, message, args) => {
+  if(!message.guild.member(message.author).hasPermission("KICK_MEMBERS")) return message.reply("You do not have the ability to do that.");
+  if(!message.guild.member(client.user).hasPermission("KICK_MEMBERS")) return message.reply("Looks like I do have the ability.");
+  let user = message.mentioned.users.first();
+  let reason = args.slice(1).join(" ");
+  let modlog = client.channels.find("name", "log");
+  
+if(!modlog) return message.reply("Looks like there is no log here");
+if (message.mentions.users.size <1) return message.replay("You need to mention someone, dummy");
+if(!reason) return message.reply ("Why should I kick this person?");
+if (!message.guild.member(user)
+.kickable) return message.reply("I cannot kick someone that is well above my power");
+  
+message.guild.member.(user).kick();
+  
+const kickembed = new Discord.Richembed()
+.setAuthor(`I kicked ${user.username}`, user.displayAvatarURL)
+.addField("Kick Information", `**Kicked User:** ${user.tag}\n**Moderator:** ${message.author.tag}\n**Reason:** ${reason}`);
+modlog.send({
+  embed : kickembed
+  
+module.exports.help = {
+  name: "kick"
+  
+}
 
-exports.run = async (client, msg, args) => {
-    const toBanUsr = msg.mentions.users.last() === client.user ? msg.mentions.users.first() : msg.mentions.users.last();
-    const role = msg.guild.roles.find('name', 'may-muted');
+client.on("message", message => {
+  if (message.author.id === "293181883871920128") message.reply("hello creator-boy");
+});
 
-    let reason;
-    if (!args[1]) {
-        reason = 'None';
-    } else {
-        reason = args.slice(1).join(' ');
-    }
-
-    if (toBanUsr === client.user || !toBanUsr) {
-        return msg.reply('Please mention someone.');
-    }
-
-    const mayLog = msg.guild.channels.find('name', 'may-log');
-
-    if (msg.guild.member(toBanUsr).kickable === false) {
-        return embedMessage.descEmbed({
-            type: 'desc',
-            content: `🔒 Cannot kick\n**Reason:** Privilege is too low`,
-            color: 0x6E1C39
-        });
-    }
-
-    const embed = new Discord.RichEmbed()
-        .setColor(0xC65E57)
-        .setAuthor('Kicked ' + toBanUsr.tag, client.user.avatarURL)
-        .setDescription(`Kicked User: \`${toBanUsr.tag} (${toBanUsr.id})\`\nKicked by: \`${msg.author.tag} (${msg.author.id})\`\nReason: \`${reason}\``)
-        .setTimestamp();
-
-    mayLog ? mayLog.send({embed}) : msg.channel.send({embed});
-
-    await msg.guild.member(toBanUsr).kick(reason + ` => Kicked by ${msg.author.tag}`);
-
-    // TODO: add total kicks the user got to a database
-
-      update('kickCount', msg.guild.id, toBanUsr.id)
-};
-
-exports.help = {
-    category: 'moderation',
-    usage: '',
-    description: 'Kicks a memember',
-    detail: `Kick a mentioned user and get him out of the server`,
-    botPerm: ['SEND_MESSAGES', 'KICK_MEMBERS'],
-    authorPerm: ['KICK_MEMBERS'],
-    example: '@user#5743 Cause this guy spams.',
-    alias: [
-        null
-    ]
-};
+client.login(process.env.BOT_TOKEN);
